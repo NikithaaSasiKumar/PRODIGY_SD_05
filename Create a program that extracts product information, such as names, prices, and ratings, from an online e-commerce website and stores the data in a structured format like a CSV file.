@@ -1,0 +1,55 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+def scrape_eCommerce(url):
+    # Send a GET request to the URL
+    response = requests.get(url)
+    
+    # Parse the HTML content of the page
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Initialize lists to store data
+    product_names = []
+    product_prices = []
+    product_ratings = []
+    
+    # Find elements containing product information
+    products = soup.find_all('div', class_='product')
+    
+    # Extract product information
+    for product in products:
+        # Extract product name
+        name = product.find('h2', class_='product-name').text.strip()
+        product_names.append(name)
+        
+        # Extract product price
+        price = product.find('span', class_='price').text.strip()
+        product_prices.append(price)
+        
+        # Extract product rating
+        rating = product.find('div', class_='rating').text.strip()
+        product_ratings.append(rating)
+    
+    return product_names, product_prices, product_ratings
+
+def save_to_csv(product_names, product_prices, product_ratings, filename):
+    # Create a DataFrame
+    df = pd.DataFrame({
+        'Product Name': product_names,
+        'Price': product_prices,
+        'Rating': product_ratings
+    })
+    
+    # Save DataFrame to CSV file
+    df.to_csv(filename, index=False)
+    print(f"Data saved to {filename}")
+
+# URL of the e-commerce website to scrape
+url = 'https://example.com/products'
+
+# Scrape product information
+product_names, product_prices, product_ratings = scrape_eCommerce(url)
+
+# Save data to a CSV file
+save_to_csv(product_names, product_prices, product_ratings, 'products.csv')
